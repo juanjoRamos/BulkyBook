@@ -2,21 +2,22 @@
 using Microsoft.EntityFrameworkCore;
 using BulkyBook.DataAccess.Data;
 using BulkyBook.Models;
+using BulkyBook.DataAccess.Repository.IRepository;
 
 namespace BulkyBookWeb.Controllers
 {
     public class CategoryController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ICategoryRepository categoryRepository;
 
-        public CategoryController(ApplicationDbContext context)
+        public CategoryController(ICategoryRepository context)
         {
-            _context = context;
+            categoryRepository = context;
         }
 
         public IActionResult Index()
         {
-            return View(_context.CategoriesTable.ToList());
+            return View(categoryRepository.GetAll());
         }
 
         #region Create
@@ -32,8 +33,8 @@ namespace BulkyBookWeb.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(categoryModel);
-                await _context.SaveChangesAsync();
+                categoryRepository.Add(categoryModel);
+                categoryRepository.Save();
                 TempData["success"] = "Successfully created";
                 return RedirectToAction("Index");
             }
@@ -50,7 +51,7 @@ namespace BulkyBookWeb.Controllers
             {
                 if (idCategory.HasValue)
                 {
-                    IEnumerable<CategoryModel> categoryList = await _context.CategoriesTable.ToListAsync();
+                    IEnumerable<CategoryModel> categoryList = categoryRepository.GetAll();
                     CategoryModel category = categoryList.FirstOrDefault(c => c.Id == idCategory);
                     return View(category);
                 }
@@ -77,8 +78,8 @@ namespace BulkyBookWeb.Controllers
                 }
                 if (ModelState.IsValid)
                 {
-                    _context.CategoriesTable.Update(categoryModel);
-                    _context.SaveChanges();
+                    categoryRepository.Update(categoryModel);
+                    categoryRepository.Save();
                     TempData["success"] = "Successfully edited";
                     return RedirectToAction("Index");
                 }
@@ -103,7 +104,7 @@ namespace BulkyBookWeb.Controllers
         {
             try
             {
-                IEnumerable<CategoryModel> categoryList = await _context.CategoriesTable.ToListAsync();
+                IEnumerable<CategoryModel> categoryList = categoryRepository.GetAll();
                 CategoryModel category = categoryList.Where(c => c.Id == idCategory).FirstOrDefault();
                 return View(category);
             }
@@ -124,16 +125,15 @@ namespace BulkyBookWeb.Controllers
                     throw new Exception();
                 }
 
-                var categoryModel = await _context.CategoriesTable
-                    .FirstOrDefaultAsync(m => m.Id == id);
+                var categoryModel = categoryRepository.GetFirstOrDefault(m => m.Id == id);
 
                 if (categoryModel == null)
                 {
                     throw new Exception();
                 }
 
-                _context.CategoriesTable.Remove(categoryModel);
-                _context.SaveChanges();
+                categoryRepository.Remove(categoryModel);
+                categoryRepository.Save();
                 TempData["success"] = "Successfully deleted";
                 return RedirectToAction("Index");
             }
