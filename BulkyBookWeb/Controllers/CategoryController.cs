@@ -1,112 +1,151 @@
-﻿using BulkyBookWeb.Data;
-using BulkyBookWeb.Models;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using BulkyBook.DataAccess.Data;
+using BulkyBook.Models;
 
 namespace BulkyBookWeb.Controllers
 {
     public class CategoryController : Controller
     {
-        private readonly ApplicationDbContext _db;
+        private readonly ApplicationDbContext _context;
 
-        public CategoryController(ApplicationDbContext db)
+        public CategoryController(ApplicationDbContext context)
         {
-            _db = db;
+            _context = context;
         }
 
         public IActionResult Index()
         {
-            IEnumerable<CategoryModel> objCategoryList = _db.CategoriesTable.ToList();
-            return View(objCategoryList);
+            return View(_context.CategoriesTable.ToList());
         }
 
-        //GET
+        #region Create
+        [HttpGet]
         public IActionResult Create()
         {
             return View();
         }
 
-        //POST
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(CategoryModel objCategory)
+        public async Task<IActionResult> Create(CategoryModel categoryModel)
         {
-            if (objCategory.Name.Equals(objCategory.DisplayOrder.ToString())) 
-            {
-                ModelState.AddModelError("CustomError", "The DisplayOrder cannot exactly match the Name");
-                //In All and where you say for example on error name
-                //ModelState.AddModelError("name", "The DisplayOrder cannot exactly match the Name");
-            }
             if (ModelState.IsValid)
             {
-                _db.CategoriesTable.Add(objCategory);
-                _db.SaveChanges();
-                TempData["success"] = "Category has been created!!";
+                _context.Add(categoryModel);
+                await _context.SaveChangesAsync();
+                TempData["success"] = "Successfully created";
                 return RedirectToAction("Index");
             }
-            return View(objCategory);
+            TempData["error"] = "Something is wrong";
+            return View();
         }
+        #endregion
 
-        //GET
-        public IActionResult Edit(int? idCategory)
+        #region Edit
+        [HttpGet]
+        public async Task<IActionResult> Edit(int? idCategory)
         {
-            if(idCategory == null || idCategory == 0)
-                return NotFound();
-
-            var categoryFind = _db.CategoriesTable.Find(idCategory);
-
-            if(categoryFind.Equals(null))
-                return NotFound();
-
-            return View(categoryFind);
-        }
-
-        //POST
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Edit(CategoryModel objCategory)
-        {
-            if (objCategory.Name.Equals(objCategory.DisplayOrder.ToString()))
+            try
             {
-                ModelState.AddModelError("CustomError", "The DisplayOrder cannot exactly match the Name");
+                if (idCategory.HasValue)
+                {
+                    IEnumerable<CategoryModel> categoryList = await _context.CategoriesTable.ToListAsync();
+                    CategoryModel category = categoryList.FirstOrDefault(c => c.Id == idCategory);
+                    return View(category);
+                }
+                else
+                {
+                    throw new Exception();
+                }
             }
-            if (ModelState.IsValid)
+            catch (Exception)
             {
-                _db.CategoriesTable.Update(objCategory);
-                _db.SaveChanges();
-                TempData["success"] = "Category has been edited!!";
+                TempData["error"] = "Something is wrong";
                 return RedirectToAction("Index");
             }
-            return View(objCategory);
         }
 
-        //GET
-        public IActionResult Delete(int? idCategory)
-        {
-            if (idCategory == null || idCategory == 0)
-                return NotFound();
-
-            var categoryFind = _db.CategoriesTable.Find(idCategory);
-
-            if (categoryFind.Equals(null))
-                return NotFound();
-
-            return View(categoryFind);
-        }
-
-        //POST
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult DeletePost(CategoryModel objCategory)
+        public IActionResult Edit(CategoryModel categoryModel)
         {
-            var objToDelete = _db.CategoriesTable.Find(objCategory.Id); 
-            if (objToDelete == null)
-                return NotFound();
-                
-            _db.CategoriesTable.Remove(objToDelete);
-            _db.SaveChanges();
-            TempData["success"] = "Category has been removed!!";
-            return RedirectToAction("Index");
+            try
+            {
+                if (categoryModel.Name == categoryModel.DisplayOrder.ToString()) 
+                {
+                    ModelState.AddModelError("", "The display order cannot exactly match the name");
+                }
+                if (ModelState.IsValid)
+                {
+                    _context.CategoriesTable.Update(categoryModel);
+                    _context.SaveChanges();
+                    TempData["success"] = "Successfully edited";
+                    return RedirectToAction("Index");
+                }
+                else 
+                {
+                    throw new Exception();
+                }
+            }
+            catch (Exception)
+            {
+                TempData["error"] = "Something is wrong";
+                return View();
+            }
         }
+
+        #endregion
+
+        #region Delete
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int? idCategory)
+        {
+            try
+            {
+                IEnumerable<CategoryModel> categoryList = await _context.CategoriesTable.ToListAsync();
+                CategoryModel category = categoryList.Where(c => c.Id == idCategory).FirstOrDefault();
+                return View(category);
+            }
+            catch (Exception)
+            {
+                TempData["error"] = "Something is wrong";
+                return RedirectToAction("Index");
+            }
+        }
+
+        [HttpPost, ActionName("Delete")]
+        public async Task<IActionResult> DeletePost(int? id)
+        {
+            try
+            {
+                if (id == null)
+                {
+                    throw new Exception();
+                }
+
+                var categoryModel = await _context.CategoriesTable
+                    .FirstOrDefaultAsync(m => m.Id == id);
+
+                if (categoryModel == null)
+                {
+                    throw new Exception();
+                }
+
+                _context.CategoriesTable.Remove(categoryModel);
+                _context.SaveChanges();
+                TempData["success"] = "Successfully deleted";
+                return RedirectToAction("Index");
+            }
+            catch (Exception)
+            {
+                TempData["error"] = "Something is wrong";
+                return View();
+            }
+
+        }
+
+        #endregion
 
     }
 }
