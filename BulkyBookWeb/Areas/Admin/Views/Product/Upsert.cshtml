@@ -1,0 +1,106 @@
+﻿@model BulkyBook.Models.ViewModels.ProductViewModel
+
+<form method="post" asp-action="Upsert" enctype="multipart/form-data">
+    <div class="border p-3 mt-4 row">
+        <div class="row pb-2">
+            <h2 class="text-primary">@(Model.productModel.Id != 0? "Update" : "Create") product</h2>
+            <hr />
+        </div>
+
+        <input asp-for="productModel.Id" hidden />
+
+        <div class="mb-3">
+            <label asp-for="productModel.Title"></label>
+            <input asp-for="productModel.Title" class="form-control" />
+            <span asp-validation-for="productModel.Title" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="productModel.Description"></label>
+            <textarea asp-for="productModel.Description" rows="3" class="form-control"></textarea>
+            <span asp-validation-for="productModel.Description" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3 col-6">
+            <label asp-for="productModel.ISBN"></label>
+            <input asp-for="productModel.ISBN" class="form-control" />
+            <span asp-validation-for="productModel.ISBN" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3 col-6">
+            <label asp-for="productModel.Author"></label>
+            <input asp-for="productModel.Author" class="form-control" />
+            <span asp-validation-for="productModel.Author" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3 col-6" >
+            <label asp-for="productModel.Price"></label>
+            <input asp-for="productModel.Price" class="form-control" />
+            <span asp-validation-for="productModel.Price" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="productModel.ImageUrl"></label>
+            <input id="uploadBox" type="file" name="file" class="form-control" />
+            <span asp-validation-for="productModel.ImageUrl" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3 col-6">
+            <label asp-for="productModel.CategoryId"></label>
+            <select asp-for="productModel.CategoryId" asp-items="@Model.CategoryList" class="form-select">
+                <option disabled selected>-- Select category</option>
+            </select>
+            <span asp-validation-for="productModel.CategoryId" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3 col-6">
+            <label asp-for="productModel.CoverTypeId"></label>
+            <select asp-for="productModel.CoverTypeId" asp-items="@Model.CovertTypeList" class="form-select">
+                <option disabled selected>-- Select cover type</option>
+            </select>
+            <span asp-validation-for="productModel.CategoryId" class="text-danger"></span>
+        </div>
+
+
+
+        @*Con la sección de scrips de ValidationScripts esta línea no es necesaria  <div asp-validation-summary="All"></div>*@
+        <div class="col-12">
+            @if (Model.productModel.Id != 0)
+            {
+                 <button type="submit" class="btn btn-primary" style="width:150px;">Update</button>
+            }
+            else
+            {
+                <button
+                    type="submit" 
+                    class="btn btn-primary" 
+                    style="width:150px;"
+                    onclick="return ValidateInput()"
+                >Create</button>
+            }
+            <a asp-controller="Product" asp-action="Index" class="btn btn-secondary" style="width:150px;">Back to list</a>
+        </div>
+    </div>
+
+</form>
+
+@section Scripts{
+
+    @{
+    <partial name="_ValidationScriptsPartial" />
+    }
+    <script type="text/javascript">
+        function ValidateInput() {
+            if (document.getElementById(`uploadBox`).value == "") {
+                Swal.fire({
+                    icon:'error',
+                    title:'Oops',
+                    text: 'Please upload an image!'
+                });
+                return false;
+            }
+            return true;
+        }
+    </script>
+
+}
