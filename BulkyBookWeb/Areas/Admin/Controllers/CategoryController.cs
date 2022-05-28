@@ -4,20 +4,20 @@ using BulkyBook.DataAccess.Data;
 using BulkyBook.Models;
 using BulkyBook.DataAccess.Repository.IRepository;
 
-namespace BulkyBookWeb.Controllers
+namespace BulkyBookWeb.Areas.Admin.Controllers
 {
     public class CategoryController : Controller
     {
-        private readonly ICategoryRepository categoryRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CategoryController(ICategoryRepository context)
+        public CategoryController(IUnitOfWork unitOfWork)
         {
-            categoryRepository = context;
+            _unitOfWork = unitOfWork;
         }
 
         public IActionResult Index()
         {
-            return View(categoryRepository.GetAll());
+            return View(_unitOfWork.categoryRepository.GetAll());
         }
 
         #region Create
@@ -33,8 +33,8 @@ namespace BulkyBookWeb.Controllers
         {
             if (ModelState.IsValid)
             {
-                categoryRepository.Add(categoryModel);
-                categoryRepository.Save();
+                _unitOfWork.categoryRepository.Add(categoryModel);
+                _unitOfWork.Save();
                 TempData["success"] = "Successfully created";
                 return RedirectToAction("Index");
             }
@@ -51,7 +51,7 @@ namespace BulkyBookWeb.Controllers
             {
                 if (idCategory.HasValue)
                 {
-                    IEnumerable<CategoryModel> categoryList = categoryRepository.GetAll();
+                    IEnumerable<CategoryModel> categoryList = _unitOfWork.categoryRepository.GetAll();
                     CategoryModel category = categoryList.FirstOrDefault(c => c.Id == idCategory);
                     return View(category);
                 }
@@ -72,18 +72,18 @@ namespace BulkyBookWeb.Controllers
         {
             try
             {
-                if (categoryModel.Name == categoryModel.DisplayOrder.ToString()) 
+                if (categoryModel.Name == categoryModel.DisplayOrder.ToString())
                 {
                     ModelState.AddModelError("", "The display order cannot exactly match the name");
                 }
                 if (ModelState.IsValid)
                 {
-                    categoryRepository.Update(categoryModel);
-                    categoryRepository.Save();
+                    _unitOfWork.categoryRepository.Update(categoryModel);
+                    _unitOfWork.Save();
                     TempData["success"] = "Successfully edited";
                     return RedirectToAction("Index");
                 }
-                else 
+                else
                 {
                     throw new Exception();
                 }
@@ -104,7 +104,7 @@ namespace BulkyBookWeb.Controllers
         {
             try
             {
-                IEnumerable<CategoryModel> categoryList = categoryRepository.GetAll();
+                IEnumerable<CategoryModel> categoryList = _unitOfWork.categoryRepository.GetAll();
                 CategoryModel category = categoryList.Where(c => c.Id == idCategory).FirstOrDefault();
                 return View(category);
             }
@@ -125,15 +125,15 @@ namespace BulkyBookWeb.Controllers
                     throw new Exception();
                 }
 
-                var categoryModel = categoryRepository.GetFirstOrDefault(m => m.Id == id);
+                var categoryModel = _unitOfWork.categoryRepository.GetFirstOrDefault(m => m.Id == id);
 
                 if (categoryModel == null)
                 {
                     throw new Exception();
                 }
 
-                categoryRepository.Remove(categoryModel);
-                categoryRepository.Save();
+                _unitOfWork.categoryRepository.Remove(categoryModel);
+                _unitOfWork.Save();
                 TempData["success"] = "Successfully deleted";
                 return RedirectToAction("Index");
             }
