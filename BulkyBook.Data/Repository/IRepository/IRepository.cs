@@ -13,7 +13,7 @@ namespace BulkyBook.DataAccess.Repository.IRepository
         /// 
         /// </summary>
         /// <returns></returns>
-        IEnumerable<T> GetAll();
+        IEnumerable<T> GetAll(string? includeProperties = null);
 
         /// <summary>
         /// 
@@ -26,7 +26,7 @@ namespace BulkyBook.DataAccess.Repository.IRepository
         /// </summary>
         /// <param name="filter"></param>
         /// <returns></returns>
-        T GetFirstOrDefault(Expression<Func<T,bool>> filter);
+        T GetFirstOrDefault(Expression<Func<T,bool>> filter, string? includeProperties = null);
 
         /// <summary>
         /// 

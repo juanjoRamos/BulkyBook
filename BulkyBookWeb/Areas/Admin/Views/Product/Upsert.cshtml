@@ -1,9 +1,10 @@
-﻿@model BulkyBook.Models.ViewModels.ProductViewModel
+﻿
+@model BulkyBook.Models.ViewModels.ProductViewModel
 
 <form method="post" asp-action="Upsert" enctype="multipart/form-data">
     <div class="border p-3 mt-4 row">
         <div class="row pb-2">
-            <h2 class="text-primary">@(Model.productModel.Id != 0? "Update" : "Create") product</h2>
+            <h2 class="text-primary">@(Model.productModel.Id != 0 ? "Update" : "Create") product</h2>
             <hr />
         </div>
 
@@ -60,7 +61,6 @@
             </select>
             <span asp-validation-for="productModel.CategoryId" class="text-danger"></span>
         </div>
-
 
 
         @*Con la sección de scrips de ValidationScripts esta línea no es necesaria  <div asp-validation-summary="All"></div>*@
