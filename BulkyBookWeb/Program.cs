@@ -2,16 +2,21 @@ using BulkyBook.DataAccess.Data;
 using BulkyBook.DataAccess.Repository;
 using BulkyBook.DataAccess.Repository.IRepository;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+builder.Services.AddDefaultIdentity<IdentityUser>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders()
+    .AddDefaultUI();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-
-//Establecer la conexión con la base de datos que tenemos definida en el ConnectionString
-builder.Services.AddDbContext<ApplicationDbContext>(options => 
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-);
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -31,6 +36,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseAuthentication();
 
 app.UseAuthorization();
 
@@ -39,6 +45,8 @@ app.UseAuthorization();
 //       pattern: "{area=Admin}/{controller=Category}/{action=Index}/{id?}"
 //   );
 
+//Permite navegar por las paginas de Razor 
+app.MapRazorPages();
 
 app.MapControllerRoute(
     name: "default",
